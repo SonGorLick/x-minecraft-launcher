@@ -42,7 +42,6 @@ export async function findLevelRootOnPath(path: string): Promise<string | undefi
  * @param instanceName The instance name
  */
 export function getInstanceSave(path: string, instanceName: string): InstanceSave {
-  const url = pathToFileURL(join(path, 'icon.png'))
   return {
     path,
     instanceName,
