@@ -6,7 +6,7 @@ import watch from 'node-watch'
 import { dirname, join } from 'path'
 import LauncherApp from '../app/LauncherApp'
 import { LauncherAppKey } from '../app/utils'
-import { shouldIgnoreFile } from '../resourceCore'
+import { shouldIgnoreFile, watchResources } from '../resourceCore'
 import { AggregateExecutor } from '../util/aggregator'
 import { linkWithTimeoutOrCopy, readdirIfPresent } from '../util/fs'
 import { Inject } from '../util/objectRegistry'
@@ -73,13 +73,15 @@ export class InstanceModsService extends AbstractService implements IInstanceMod
       }
     })
 
-    const state = this.storeManager.register('InstanceMods/' + instancePath, new InstanceModsState())
+    const state = this.storeManager.register('InstanceMods/' + instancePath, new InstanceModsState(), () => {
+      watcher.close()
+    })
 
     const basePath = join(instancePath, 'mods')
     await ensureDir(basePath)
     await this.resourceService.whenReady(ResourceDomain.Mods)
     state.instanceMods({ instance: instancePath, resources: await scanMods(basePath) })
-    const modsWatcher = watch(basePath, async (event, filePath) => {
+    const watcher = watch(basePath, async (event, filePath) => {
       if (shouldIgnoreFile(filePath)) return
       if (event === 'update') {
         const [resource] = await this.resourceService.importResources([{ path: filePath, domain: ResourceDomain.Mods }])

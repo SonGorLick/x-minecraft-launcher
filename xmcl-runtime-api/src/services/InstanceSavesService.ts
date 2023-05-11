@@ -1,6 +1,7 @@
 import { Exception, InstanceNotFoundException } from '../entities/exception'
 import { InstanceSave, InstanceSaveMetadata } from '../entities/save'
-import { ServiceKey, StatefulService } from './Service'
+import { Disposable } from '../util/Disposable'
+import { ServiceKey } from './Service'
 
 export interface ExportSaveOptions {
   /**
@@ -116,10 +117,10 @@ export interface InstanceSavesService {
    */
   getInstanceSaves(path: string): Promise<InstanceSave[]>
   /**
-   * Mount and load instances saves
+   * Watch instances saves
    * @param path
    */
-  watchSaves(path: string): Promise<SaveState>
+  watchSaves(path: string): Promise<Disposable<SaveState>>
   /**
    * Clone a save under an instance to one or multiple instances.
    *

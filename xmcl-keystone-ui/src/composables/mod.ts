@@ -1,7 +1,7 @@
 import { useService } from '@/composables'
 import { AggregateExecutor } from '@/util/aggregator'
 import { ModDependencies, getModDependencies, getModProvides } from '@/util/modDependencies'
-import { InstanceModsServiceKey, JavaRecord, Resource, ResourceServiceKey, RuntimeVersions, isPersistedResource } from '@xmcl/runtime-api'
+import { Instance, InstanceModsServiceKey, JavaRecord, Resource, ResourceServiceKey, RuntimeVersions, isPersistedResource } from '@xmcl/runtime-api'
 import { InjectionKey, Ref, computed, ref, watch } from 'vue'
 
 export const kModsContext: InjectionKey<{
@@ -91,8 +91,8 @@ export interface ModItem {
 /**
  * Open read/write for current instance mods
  */
-export function useInstanceMods(runtimes: Ref<RuntimeVersions>, java: Ref<JavaRecord | undefined>) {
-  const { state, enable, disable } = useService(InstanceModsServiceKey)
+export function useInstanceMods(instance: Ref<Instance>, java: Ref<JavaRecord | undefined>) {
+  const { enable, disable } = useService(InstanceModsServiceKey)
   const { updateResources } = useService(ResourceServiceKey)
   const { showDirectory } = useService(InstanceModsServiceKey)
 
@@ -129,7 +129,7 @@ export function useInstanceMods(runtimes: Ref<RuntimeVersions>, java: Ref<JavaRe
 
   const currentRuntime = computed(() => {
     const runtime: Record<string, string> = {
-      ...(runtimes.value as any),
+      ...(instance.value.runtime as any),
       java: java.value?.version.toString() ?? '',
     }
     runtime.fabricloader = runtime.fabricLoader
@@ -231,8 +231,8 @@ export function useInstanceMods(runtimes: Ref<RuntimeVersions>, java: Ref<JavaRe
       const toDisable = cmd.filter(c => c[1] === 'disable')
       const toUpdate = cmd.filter(c => c[1] === 'update')
       Promise.all([
-        enable({ mods: toEnable.map(e => e[0].resource) }),
-        disable({ mods: toDisable.map(e => e[0].resource) }),
+        enable({ mods: toEnable.map(e => e[0].resource), path: instance.value.path }),
+        disable({ mods: toDisable.map(e => e[0].resource), path: instance.value.path }),
         updateResources(toUpdate.map(([item]) => ({
           ...item.resource,
           name: item.name,
@@ -258,13 +258,13 @@ export function useInstanceMods(runtimes: Ref<RuntimeVersions>, java: Ref<JavaRe
     executor.push([item, 'update'])
   }
 
-  onMounted(() => {
-    updateItems(state.mods)
-  })
+  // onMounted(() => {
+    // updateItems(state.mods)
+  // })
 
-  watch(computed(() => state.mods), (val) => {
-    updateItems(val)
-  })
+  // watch(computed(() => state.mods), (val) => {
+  //   updateItems(val)
+  // })
 
   return {
     items,

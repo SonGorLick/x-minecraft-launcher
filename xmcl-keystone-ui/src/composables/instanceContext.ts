@@ -8,6 +8,7 @@ import { useInstanceMods } from './mod'
 import { useInstanceOptions } from './instanceOptions'
 import { useInstanceJava } from './instanceJava'
 import { useInstanceVersion } from './instanceVersion'
+import { useInstanceSaves } from './save'
 
 /**
  * The context to hold the instance related data. This is used to share data between different components.
@@ -22,9 +23,11 @@ export function useInstanceContext() {
   const isServer = useInstanceIsServer(instance)
 
   const options = useInstanceOptions(instance)
+  const saves = useInstanceSaves(instance)
+  const mods = useInstanceMods(instance, java)
+
   const modSearch = useModsSearch(ref(''), runtime)
   const modSearchItems = useModSearchItems(modSearch.keyword, modSearch.modrinth, modSearch.curseforge, modSearch.mods, modSearch.existedMods)
-  const mods = useInstanceMods(runtime, java)
 
   return {
     issue,
@@ -33,6 +36,7 @@ export function useInstanceContext() {
     name,
     mods,
     options,
+    saves,
     version: runtime,
     resolvedVersion,
     minecraft,
