@@ -2,29 +2,17 @@
 import { GenericEventEmitter } from './events'
 import { ServiceKey, StatefulService } from './services/Service'
 
-interface ServiceChannelEventMap {
+interface SyncableEventMap {
   commit: {
     mutation: { payload: any; type: string }
     id: number
   }
-  task: {
-    /**
-     * The service method name
-     */
-    name: string
-    /**
-     * The promise of the method call
-     */
-    promise: Promise<unknown>
-    /**
-     * The session id of the method call
-     */
-    sessionId: string
-    /**
-     * The task id
-     */
-    id: string
-  }
+}
+
+/**
+ * Low level syncable channel to communicate with server to sync state.
+ */
+export interface SyncableStateChannel<T> extends GenericEventEmitter<SyncableEventMap> {
 }
 
 /**
@@ -52,7 +40,7 @@ export type ServiceChannel<T> = {
     method: M,
     payload: MT extends (...args: any) => any ? Parameters<MT>[0] : never,
   ): Promise<MT extends (...args: any) => any ? ReturnType<MT> : never>
-} & GenericEventEmitter<ServiceChannelEventMap>
+} & GenericEventEmitter<SyncableEventMap>
 
 export interface ServiceChannels {
   /**

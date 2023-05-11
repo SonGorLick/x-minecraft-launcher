@@ -7,6 +7,10 @@ import { ServiceStateProxy } from '../util/serviceProxy'
 
 export const kStateKey = Symbol('StateKey')
 
+export function isStateObject(v: object): v is Disposable<any> {
+  return kStateKey in v
+}
+
 export default class ServiceStateManager extends Manager {
   private logger = this.app.logManager.getLogger('ServiceStateManager')
   private eventBus = new EventEmitter()

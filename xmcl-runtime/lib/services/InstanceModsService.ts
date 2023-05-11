@@ -184,27 +184,27 @@ export class InstanceModsService extends AbstractService implements IInstanceMod
     const promises: Promise<void>[] = []
     const instanceModsDir = join(path, ResourceDomain.Mods)
     for (const resource of mods) {
-      if (dirname(resource.path) !== instanceModsDir) {
-        const founded = this.state.mods.find(m => m.ino === resource.ino) ??
-          this.state.mods.find(m => m.hash === resource.hash)
-        if (founded && founded.path !== resource.path) {
-          const realPath = join(instanceModsDir, founded.fileName)
-          if (existsSync(realPath)) {
-            promises.push(unlink(realPath))
-          } else {
-            this.warn(`Skip to uninstall unmanaged mod file on ${resource.path}!`)
-          }
-        } else {
-          this.warn(`Skip to uninstall unmanaged mod file on ${resource.path}!`)
-        }
-      } else {
+      // if (dirname(resource.path) !== instanceModsDir) {
+      //   const founded = this.state.mods.find(m => m.ino === resource.ino) ??
+      //     this.state.mods.find(m => m.hash === resource.hash)
+      //   if (founded && founded.path !== resource.path) {
+      //     const realPath = join(instanceModsDir, founded.fileName)
+      //     if (existsSync(realPath)) {
+      //       promises.push(unlink(realPath))
+      //     } else {
+      //       this.warn(`Skip to uninstall unmanaged mod file on ${resource.path}!`)
+      //     }
+      //   } else {
+      //     this.warn(`Skip to uninstall unmanaged mod file on ${resource.path}!`)
+      //   }
+      // } else {
         promises.push(unlink(resource.path).catch(e => {
           // if (e.code === 'ENOENT') {
           //   // Force remove
           //   this.state.instanceModRemove([resource])
           // }
         }))
-      }
+      // }
     }
     await Promise.all(promises)
     this.log(`Finish to uninstall ${mods.length} from ${path}`)
