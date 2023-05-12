@@ -50,16 +50,16 @@ export default class ServiceStateManager extends Manager {
     return this
   }
 
-  register<T extends State<T>>(serviceName: string, state: T, dispose?: () => void): Disposable<T> {
+  register<T extends State<T>>(id: string, state: T, dispose?: () => void): Disposable<T> {
     const proxy = new ServiceStateProxy(
       this.app,
       this.eventBus,
-      serviceName,
+      id,
       state,
       this.logger,
     )
-    this.registeredState[serviceName] = proxy
-    Object.defineProperty(state, kStateKey, serviceName)
-    return state
+    this.registeredState[id] = proxy
+    Object.defineProperty(state, kStateKey, id)
+    return Object.assign(state, { dispose, id })
   }
 }

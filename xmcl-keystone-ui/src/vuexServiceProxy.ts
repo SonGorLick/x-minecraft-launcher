@@ -159,70 +159,9 @@ class VuexStoreFactory {
   }
 
   private createSync<T>(state: T, syncable: SyncableStateChannel<any>, key: string) {
-    let lastId = 0
-    let syncingQueue: { [id: string]: MutationPayload } = {}
-
     syncable.on('commit', ({ mutation, id }) => {
-      if (this.store.state[`remote/${key}`].syncing) {
-        syncingQueue[id] = mutation
-        return
-      }
-      const newId = lastId + 1
-      if (id <= lastId) {
-        // discard old packet
-        console.log(`Discard stale sync mutation ${id}(${mutation.type}) as last id is ${lastId}`)
-        return
-      }
-      if (id !== newId) {
-        console.log(`Sync conflict from main. Last id in renderer: ${lastId}. Sync from main ${id}`)
-        sync()
-      } else {
-        this.store.commit(mutation.type, mutation.payload)
-        lastId = newId
-      }
+      this.store.commit(mutation.type, mutation.payload)
     })
-    const sync = () => {
-      this.store.commit('syncStart', { service: key })
-      console.log(`Sync ${key}.`)
-      syncable.sync(lastId).then((result) => {
-        if (typeof result === 'string') {
-          if (result === 'NOT_FOUND_SERVICE') {
-            console.log(`Does not found service ${key}`)
-          } else if (result === 'NOT_STATE_SERVICE') {
-            console.log(`The service ${key} does not have state`)
-          } else {
-            console.log(`Fail to sync service ${key} ${result}`)
-          }
-          return
-        }
-        const syncInfo = result
-        if (!syncInfo) {
-          console.log(`The ${key} is not syncable.`)
-          this.store.commit('sync', {})
-          return
-        }
-        const {
-          state,
-          length,
-        } = syncInfo
-        console.log(`Synced ${length} commits for ${key}.`)
-
-        this.store.commit('sync', { [key]: state })
-        lastId = length
-
-        for (const [id, m] of Object.entries(syncingQueue)) {
-          if (Number(id) > lastId) {
-            this.store.commit(m.type, m.payload)
-          }
-        }
-
-        syncingQueue = {}
-      }, (e) => {
-        console.error(`Unexpected error for service ${key}:`, e)
-      })
-    }
-
-    return sync
   }
 }
 

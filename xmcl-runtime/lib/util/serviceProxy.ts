@@ -18,7 +18,7 @@ export class ServiceStateProxy {
   constructor(
     readonly app: LauncherApp,
     readonly eventBus: EventEmitter,
-    readonly serviceName: string,
+    readonly id: string,
     readonly state: any,
     private logger: Logger,
   ) {
@@ -35,7 +35,7 @@ export class ServiceStateProxy {
           // increment the checkpoint
           self.checkPointId += 1
           // broadcast commit event to client
-          app.controller.broadcast('commit', serviceName, { mutation: { type: key, payload: value }, id: self.checkPointId })
+          app.controller.broadcast('commit', id, { mutation: { type: key, payload: value }, id: self.checkPointId })
           // broadcast mutation to mutation subscriber
           eventBus.emit(key, value)
         }
@@ -69,7 +69,7 @@ export class ServiceStateProxy {
 
   takeSnapshot(currentId: number) {
     const checkPointId = this.checkPointId
-    this.logger.log(`Sync from renderer: ${currentId}, service ${this.serviceName}: ${checkPointId}.`)
+    this.logger.log(`Sync from renderer: ${currentId}, service ${this.id}: ${checkPointId}.`)
     return {
       state: JSON.parse(JSON.stringify(this.snapshot)),
       length: checkPointId,
@@ -78,7 +78,7 @@ export class ServiceStateProxy {
 
   commit(type: string, payload: any) {
     if (typeof this.state[type] !== 'function') {
-      this.logger.error(`Cannot find mutation named ${type} in service ${this.serviceName}`)
+      this.logger.error(`Cannot find mutation named ${type} in service ${this.id}`)
     } else {
       this.state[type](payload)
     }

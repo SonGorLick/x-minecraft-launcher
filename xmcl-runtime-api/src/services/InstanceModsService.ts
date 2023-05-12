@@ -22,17 +22,6 @@ export class InstanceModsState {
    */
   instance = ''
 
-  instanceModUpdate(r: Resource[]) {
-    for (const res of r) {
-      const existed = this.mods.findIndex(m => m.hash === res.hash)
-      if (existed !== -1) {
-        this.mods[existed] = res
-      } else {
-        this.mods.push(res)
-      }
-    }
-  }
-
   instanceModUpdates({ adds, remove }: { adds: Resource[]; remove: Resource[] }) {
     const toRemoved = new Set(remove.map(p => p.hash))
     const newMods = [...this.mods]
@@ -49,9 +38,12 @@ export class InstanceModsState {
       }
     }
 
-    const filtered = newMods.filter(m => !toRemoved.has(m.hash))
-
-    this.mods = filtered
+    if (remove.length > 0) {
+      const filtered = newMods.filter(m => !toRemoved.has(m.hash))
+      this.mods = filtered
+    } else {
+      this.mods = newMods
+    }
   }
 
   instanceModUpdateExisted(r: Resource[]) {
@@ -66,11 +58,6 @@ export class InstanceModsState {
   instanceModRemove(mods: Resource[]) {
     const toRemoved = new Set(mods.map(p => p.hash))
     this.mods = this.mods.filter(m => !toRemoved.has(m.hash))
-  }
-
-  instanceMods(payload: { instance: string; resources: Resource[] }) {
-    this.instance = payload.instance
-    this.mods = payload.resources
   }
 }
 
